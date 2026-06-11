@@ -1,77 +1,131 @@
 <!DOCTYPE html>
 <html lang="es">
 
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login Sistema</title>
 
-
     <link rel="stylesheet" href="style login.css">
-
 
     <link rel="stylesheet"
         href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css">
 </head>
 
-
 <body>
-
 
     <div class="login-container">
 
-
         <div class="login-card">
-
 
             <div class="logo">
                 <i class="fa-solid fa-shield-halved"></i>
             </div>
 
-
             <h1>Bienvenido</h1>
             <p>Inicia sesión para continuar</p>
-
 
             <div class="campo">
                 <i class="fa-solid fa-user"></i>
                 <input type="text" id="usuario" placeholder="Usuario">
             </div>
 
-
             <div class="campo">
                 <i class="fa-solid fa-lock"></i>
                 <input type="password" id="password" placeholder="Contraseña">
+
                 <span id="togglePassword">
                     <i class="fa-solid fa-eye"></i>
                 </span>
             </div>
 
-
             <button onclick="login()">
                 Ingresar
             </button>
 
-
             <p id="mensaje"></p>
-
-
-                </div>
-
-
-            </div>
-
 
             <div class="footer">
                 <i class="fa-solid fa-shield-check"></i>
                 Sistema seguro y protegido
             </div>
 
-
         </div>
 
-
     </div>
+
+    <script>
+
+        const usuarios = {
+            "Manuel": "1234",
+            "Carlos": "1234",
+            "Alexandro": "1234",
+            "Juan": "1234"
+        };
+
+        function login() {
+
+            const usuario = document.getElementById("usuario").value.trim();
+            const password = document.getElementById("password").value.trim();
+            const mensaje = document.getElementById("mensaje");
+
+            mensaje.style.color = "#dc2626";
+
+            if (usuario === "" || password === "") {
+                mensaje.innerHTML = "Todos los campos son obligatorios";
+                return;
+            }
+
+            if (usuario.length < 3) {
+                mensaje.innerHTML = "Usuario inválido";
+                return;
+            }
+
+            if (!usuarios[usuario]) {
+                mensaje.innerHTML = "El usuario no existe";
+                return;
+            }
+
+            if (usuarios[usuario] !== password) {
+                mensaje.innerHTML = "Contraseña incorrecta";
+                return;
+            }
+
+            mensaje.style.color = "#16a34a";
+            mensaje.innerHTML = "Acceso concedido";
+
+            localStorage.setItem("usuario", usuario);
+
+            setTimeout(() => {
+                window.location.href = "index.html";
+            }, 1000);
+        }
+
+        const togglePassword = document.getElementById("togglePassword");
+        const passwordInput = document.getElementById("password");
+
+        togglePassword.addEventListener("click", () => {
+
+            const tipo = passwordInput.type === "password"
+                ? "text"
+                : "password";
+
+            passwordInput.type = tipo;
+
+            togglePassword.innerHTML =
+                tipo === "password"
+                    ? '<i class="fa-solid fa-eye"></i>'
+                    : '<i class="fa-solid fa-eye-slash"></i>';
+        });
+
+        document.addEventListener("keydown", function (e) {
+            if (e.key === "Enter") {
+                login();
+            }
+        });
+
+    </script>
+
 </body>
+
 </html>
