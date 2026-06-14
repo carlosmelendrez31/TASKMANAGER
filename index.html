@@ -1,0 +1,198 @@
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+<style>
+  body,html{margin:0;padding:0;background:transparent}
+  .tm-wrap{padding:1.25rem 0}
+  .badge-urgencia{font-size:11px;padding:3px 8px;border-radius:20px;font-weight:600}
+  .badge-sin{background:#e9ecef;color:#495057}
+  .badge-progreso{background:#fff3cd;color:#856404}
+  .badge-completada{background:#d1e7dd;color:#0f5132}
+  .badge-baja{background:#cff4fc;color:#055160}
+  .badge-media{background:#fff3cd;color:#856404}
+  .badge-alta{background:#f8d7da;color:#842029}
+  .task-card{border:none;border-radius:12px;box-shadow:0 1px 4px rgba(0,0,0,.07);transition:box-shadow .2s}
+  .task-card:hover{box-shadow:0 4px 16px rgba(0,0,0,.12)}
+  .avatar{width:30px;height:30px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+  .av-carlos{background:#cfe2ff;color:#084298}
+  .av-juanda{background:#d1e7dd;color:#0f5132}
+  .av-alex{background:#f8d7da;color:#842029}
+  .av-pacheco{background:#fff3cd;color:#664d03}
+  .form-card{border:none;border-radius:14px;box-shadow:0 2px 12px rgba(0,0,0,.09)}
+  .btn-add-task{border-radius:10px;font-weight:600;padding:8px 20px}
+  .task-title.done{text-decoration:line-through;color:#adb5bd}
+  .stats-bar{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:1.25rem}
+  .stat-pill{background:#fff;border:1px solid #e9ecef;border-radius:20px;padding:4px 14px;font-size:13px;display:flex;align-items:center;gap:6px}
+  .empty-msg{color:#adb5bd;font-size:14px;text-align:center;padding:2rem 0}
+  .filter-btns .btn{border-radius:20px;font-size:13px;padding:4px 14px}
+  select.form-select,input.form-control{border-radius:10px;font-size:14px}
+  .btn-del{border:none;background:none;color:#dee2e6;font-size:15px;cursor:pointer;padding:0 4px;transition:color .15s}
+  .btn-del:hover{color:#dc3545}
+  .section-label{font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:#adb5bd;margin-bottom:.5rem}
+</style>
+
+<div class="tm-wrap">
+
+  <div class="d-flex align-items-center gap-2 mb-3">
+    <i class="bi bi-check2-square fs-4" style="color:#6c63ff"></i>
+    <span style="font-size:1.2rem;font-weight:700;color:#212529">TaskManager</span>
+  </div>
+
+  <div class="card form-card mb-4">
+    <div class="card-body p-3">
+      <p class="section-label mb-3">Nueva tarea</p>
+      <div class="row g-2 align-items-end">
+        <div class="col-12 col-md-4">
+          <label class="form-label mb-1" style="font-size:13px;color:#6c757d">Tarea</label>
+          <input class="form-control" id="inp-tarea" placeholder="Describe la tarea…" maxlength="100">
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="form-label mb-1" style="font-size:13px;color:#6c757d">Responsable</label>
+          <select class="form-select" id="inp-resp">
+            <option value="carlos">Carlos</option>
+            <option value="juanda">Juanda</option>
+            <option value="alex">Alex</option>
+            <option value="pacheco">Pacheco</option>
+          </select>
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="form-label mb-1" style="font-size:13px;color:#6c757d">Urgencia</label>
+          <select class="form-select" id="inp-urg">
+            <option value="baja">🟢 Baja</option>
+            <option value="media" selected>🟡 Media</option>
+            <option value="alta">🔴 Alta</option>
+          </select>
+        </div>
+        <div class="col-6 col-md-2">
+          <label class="form-label mb-1" style="font-size:13px;color:#6c757d">Estado</label>
+          <select class="form-select" id="inp-estado">
+            <option value="sin">Sin empezar</option>
+            <option value="progreso">En progreso</option>
+            <option value="completada">Completada</option>
+          </select>
+        </div>
+        <div class="col-6 col-md-2">
+          <button class="btn btn-add-task w-100" id="btn-add" style="background:#6c63ff;color:#fff">
+            <i class="bi bi-plus-lg me-1"></i>Agregar
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="stats-bar" id="stats-bar"></div>
+
+  <div class="d-flex align-items-center justify-content-between mb-3 flex-wrap gap-2">
+    <p class="section-label mb-0">Tareas</p>
+    <div class="filter-btns d-flex gap-1 flex-wrap" id="filter-btns">
+      <button class="btn btn-sm btn-outline-secondary active" data-f="todas">Todas</button>
+      <button class="btn btn-sm btn-outline-secondary" data-f="sin">Sin empezar</button>
+      <button class="btn btn-sm btn-outline-secondary" data-f="progreso">En progreso</button>
+      <button class="btn btn-sm btn-outline-secondary" data-f="completada">Completadas</button>
+    </div>
+  </div>
+
+  <div id="task-list"></div>
+
+</div>
+
+<script>
+const INITIALS = {carlos:'CA',juanda:'JU',alex:'AL',pacheco:'PA'};
+const AV_CLASS = {carlos:'av-carlos',juanda:'av-juanda',alex:'av-alex',pacheco:'av-pacheco'};
+const ESTADO_LABEL = {sin:'Sin empezar',progreso:'En progreso',completada:'Completada'};
+const ESTADO_BADGE = {sin:'badge-sin',progreso:'badge-progreso',completada:'badge-completada'};
+const URG_BADGE = {baja:'badge-baja',media:'badge-media',alta:'badge-alta'};
+const ESTADO_ICON = {sin:'bi-circle',progreso:'bi-clock-history',completada:'bi-check-circle-fill'};
+
+let tasks = JSON.parse(localStorage.getItem('tm_v2') || '[]');
+let filtro = 'todas';
+
+function save(){ localStorage.setItem('tm_v2', JSON.stringify(tasks)); }
+
+function renderStats(){
+  const total = tasks.length;
+  const sin = tasks.filter(t=>t.estado==='sin').length;
+  const prog = tasks.filter(t=>t.estado==='progreso').length;
+  const done = tasks.filter(t=>t.estado==='completada').length;
+  document.getElementById('stats-bar').innerHTML = `
+    <div class="stat-pill"><i class="bi bi-list-task" style="color:#6c63ff"></i><span>${total} total</span></div>
+    <div class="stat-pill"><i class="bi bi-circle" style="color:#6c757d"></i><span>${sin} sin empezar</span></div>
+    <div class="stat-pill"><i class="bi bi-clock-history" style="color:#856404"></i><span>${prog} en progreso</span></div>
+    <div class="stat-pill"><i class="bi bi-check-circle-fill" style="color:#0f5132"></i><span>${done} completadas</span></div>
+  `;
+}
+
+function renderList(){
+  const list = document.getElementById('task-list');
+  const visible = filtro==='todas' ? tasks : tasks.filter(t=>t.estado===filtro);
+  if(visible.length===0){
+    list.innerHTML = '<p class="empty-msg"><i class="bi bi-inbox fs-3 d-block mb-2"></i>Sin tareas aquí</p>';
+    return;
+  }
+  list.innerHTML = visible.map(t=>`
+    <div class="card task-card mb-2">
+      <div class="card-body py-2 px-3 d-flex align-items-center gap-3 flex-wrap">
+        <div class="avatar ${AV_CLASS[t.resp]}" title="${t.resp}">${INITIALS[t.resp]}</div>
+        <div class="flex-grow-1 min-width-0">
+          <div class="task-title ${t.estado==='completada'?'done':''}" style="font-size:14px;font-weight:500">${t.text}</div>
+          <div class="d-flex gap-1 mt-1 flex-wrap">
+            <span class="badge-urgencia ${URG_BADGE[t.urg]}">${t.urg.charAt(0).toUpperCase()+t.urg.slice(1)}</span>
+            <span class="badge-urgencia ${ESTADO_BADGE[t.estado]}">
+              <i class="bi ${ESTADO_ICON[t.estado]}" style="font-size:10px;margin-right:3px"></i>${ESTADO_LABEL[t.estado]}
+            </span>
+          </div>
+        </div>
+        <div class="d-flex align-items-center gap-2">
+          <select class="form-select form-select-sm" style="width:140px;font-size:12px;border-radius:8px" onchange="cambiarEstado(${t.id},this.value)">
+            <option value="sin" ${t.estado==='sin'?'selected':''}>Sin empezar</option>
+            <option value="progreso" ${t.estado==='progreso'?'selected':''}>En progreso</option>
+            <option value="completada" ${t.estado==='completada'?'selected':''}>Completada</option>
+          </select>
+          <button class="btn-del" onclick="deleteTask(${t.id})" title="Eliminar"><i class="bi bi-trash3"></i></button>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function render(){ renderStats(); renderList(); }
+
+function cambiarEstado(id,val){
+  const t = tasks.find(t=>t.id===id);
+  if(t){ t.estado=val; save(); render(); }
+}
+
+function deleteTask(id){
+  tasks = tasks.filter(t=>t.id!==id);
+  save(); render();
+}
+
+document.getElementById('btn-add').addEventListener('click',()=>{
+  const text = document.getElementById('inp-tarea').value.trim();
+  if(!text) return document.getElementById('inp-tarea').focus();
+  tasks.unshift({
+    id: Date.now(),
+    text,
+    resp: document.getElementById('inp-resp').value,
+    urg: document.getElementById('inp-urg').value,
+    estado: document.getElementById('inp-estado').value,
+  });
+  document.getElementById('inp-tarea').value='';
+  save(); render();
+});
+
+document.getElementById('inp-tarea').addEventListener('keydown',e=>{
+  if(e.key==='Enter') document.getElementById('btn-add').click();
+});
+
+document.getElementById('filter-btns').addEventListener('click',e=>{
+  const btn = e.target.closest('[data-f]');
+  if(!btn) return;
+  filtro = btn.dataset.f;
+  document.querySelectorAll('#filter-btns .btn').forEach(b=>b.classList.remove('active'));
+  btn.classList.add('active');
+  renderList();
+});
+
+render();
+</script>
